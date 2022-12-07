@@ -7,7 +7,7 @@ defmodule StateChannel do
     quote do
       use Phoenix.Channel
       @behaviour StateChannel
-      import StateChannel.Helpers, only: [set_state: 2, set_state: 3, patch_state: 4]
+      import StateChannel.Helpers, only: [set_state: 2, set_state: 3, patch_state: 3, patch_state: 4]
 
       @before_compile unquote(__MODULE__)
     end
@@ -17,7 +17,7 @@ defmodule StateChannel do
     [quoted_join(env), quoted_handle_info(env), quoted_handle_in(env)]
   end
 
-  defp quoted_join(env) do
+  defp quoted_join(_env) do
     quote do
       defoverridable join: 3
 
@@ -136,7 +136,7 @@ defmodule StateChannel do
             diff: patches
           })
 
-          new_socket |> StateChannel.Helpers.apply_patches(patches)
+          new_socket |> Phoenix.Socket.assign(:applied_patches, [])
       end
 
     {:noreply, new_socket}
@@ -173,7 +173,7 @@ defmodule StateChannel do
             diff: patches
           })
 
-          new_socket |> StateChannel.Helpers.apply_patches(patches)
+          new_socket |> Phoenix.Socket.assign(:applied_patches, [])
       end
 
     {:noreply, new_socket}

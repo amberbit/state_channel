@@ -24,7 +24,7 @@ defmodule StateChannel.MixProject do
       {:phoenix, ">= 1.6.0"},
       {:json_patch, "~> 0.8"},
       {:json_diff, "~> 0.1"},
-      {:jason, "~> 1.4", only: :test},
+      {:jason, "~> 1.4", only: :test}
     ]
   end
 end
