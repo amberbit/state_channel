@@ -1,5 +1,4 @@
 defmodule StateChannel do
-  @callback init_state(socket :: term) :: term
   @callback on_message(key :: term, value :: term, socket :: term) :: term
   @optional_callbacks on_message: 3
 
