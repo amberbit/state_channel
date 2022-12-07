@@ -7,7 +7,8 @@ defmodule StateChannel do
     quote do
       use Phoenix.Channel
       @behaviour StateChannel
-      import StateChannel.Helpers, only: [set_state: 2, set_state: 3, patch_state: 3, patch_state: 4]
+      import StateChannel.Helpers,
+        only: [set_state: 2, set_state: 3, patch_state: 3, patch_state: 4]
 
       @before_compile unquote(__MODULE__)
     end

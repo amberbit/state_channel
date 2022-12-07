@@ -1,13 +1,32 @@
 defmodule StateChannel.MixProject do
   use Mix.Project
 
+  @description "StateChannel allows you to store and modify front-end app state on the backend using Phoenix Channels"
+
   def project do
     [
       app: :state_channel,
-      version: "0.1.0",
+      description: @description,
+      version: "0.0.1",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      source_url: "https://github.com/amberbit/state_channel",
+      homepage_url: "https://github.com/amberbit/state_channel",
+      docs: [
+        extras: ["README.md"]
+      ],
+      package: package()
+    ]
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/amberbit/state_channel"
+      },
+      files: ~w(lib mix.exs mix.lock README.md LICENSE)
     ]
   end
 
