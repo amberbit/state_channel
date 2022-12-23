@@ -14,7 +14,7 @@ defmodule StateChannel do
   end
 
   defmacro __before_compile__(env) do
-    [quoted_join(env), quoted_handle_info(env), quoted_handle_in(env)]
+    [quoted_join(env), quoted_handle_in(env)]
   end
 
   defp quoted_join(_env) do
@@ -27,12 +27,9 @@ defmodule StateChannel do
         |> super(message, socket)
         |> case do
           {:ok, %{assigns: %{state: _state}} = new_socket} ->
-            send(self(), :after_join_broadcast_state)
             {:ok, new_socket |> Phoenix.Socket.assign(%{version: 0, applied_patches: []})}
 
           {:ok, new_socket} ->
-            send(self(), :after_join_broadcast_state)
-
             {:ok,
              new_socket
              |> Phoenix.Socket.assign(:state, %{})
@@ -46,35 +43,15 @@ defmodule StateChannel do
     end
   end
 
-  defp quoted_handle_info(env) do
-    if Module.defines?(env.module, {:handle_info, 2}) do
-      quote do
-        defoverridable handle_info: 2
-
-        @impl Phoenix.Channel
-        def handle_info(:after_join_broadcast_state, socket) do
-          StateChannel.handle_info(:after_join_broadcast_state, socket)
-        end
-
-        @impl Phoenix.Channel
-        def handle_info(message, socket) do
-          super(message, socket)
-        end
-      end
-    else
-      quote do
-        @impl Phoenix.Channel
-        def handle_info(:after_join_broadcast_state, socket) do
-          StateChannel.handle_info(:after_join_broadcast_state, socket)
-        end
-      end
-    end
-  end
-
   defp quoted_handle_in(env) do
     if Module.defines?(env.module, {:handle_in, 3}) do
       quote do
         defoverridable handle_in: 3
+
+        @impl Phoenix.Channel
+        def handle_in("_SC_SYNC_" = msg, payload, socket) do
+          StateChannel.handle_in(__MODULE__, msg, payload, socket)
+        end
 
         @impl Phoenix.Channel
         def handle_in("_SCMSG:" <> _key = msg, payload, socket) do
@@ -89,6 +66,11 @@ defmodule StateChannel do
     else
       quote do
         @impl Phoenix.Channel
+        def handle_in("_SC_SYNC_" = msg, payload, socket) do
+          StateChannel.handle_in(__MODULE__, msg, payload, socket)
+        end
+
+        @impl Phoenix.Channel
         def handle_in("_SCMSG:" <> _key = msg, payload, socket) do
           StateChannel.handle_in(__MODULE__, msg, payload, socket)
         end
@@ -96,7 +78,7 @@ defmodule StateChannel do
     end
   end
 
-  def handle_info(:after_join_broadcast_state, socket) do
+  def handle_in(mod, "_SC_SYNC_", _, socket) do
     Phoenix.Channel.push(socket, "set_state", %{
       state: socket.assigns.state,
       version: socket.assigns.version
